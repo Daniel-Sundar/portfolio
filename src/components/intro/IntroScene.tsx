@@ -58,6 +58,8 @@ interface Fragment {
 
 /** Where each letter rests when the two meet at the centre of the screen. */
 const REST = { D: -1.5, S: 1.5 }
+/** The pair swells slightly on the frame it breaks. */
+const IMPACT_SCALE = 1.12
 
 function Sequence({ colors, lowPower, onStart, onImpact, onFinished }: IntroSceneProps) {
   const camera = useThree(state => state.camera)
@@ -88,7 +90,7 @@ function Sequence({ colors, lowPower, onStart, onImpact, onFinished }: IntroScen
   )
   const shardGeometry = useMemo(() => new THREE.TetrahedronGeometry(1, 0), [])
 
-  const count = lowPower ? 240 : 520
+  const count = lowPower ? 180 : 340
   const fragments = useRef<Fragment[]>([])
   // Values the GSAP timeline animates; the render loop reads them every frame.
   const drive = useRef({ shake: 0, exploded: false, age: 0, cameraDrift: 0 })
@@ -106,48 +108,67 @@ function Sequence({ colors, lowPower, onStart, onImpact, onFinished }: IntroScen
   // Narrow screens: pull the pair back so both letters stay in frame.
   const fit = Math.min(1, viewport.width / 7.4)
 
+  // Everything the shatter needs is prepared here, before the animation starts,
+  // so the frame of impact only has to flip a flag.
+  const seeds = useMemo<Fragment[]>(() => {
+    const list: Fragment[] = []
+    const point = new THREE.Vector3()
+    const letters: Array<['D' | 'S', number]> = [['D', REST.D], ['S', REST.S]]
+    for (const [char, restX] of letters) {
+      const sampler = new MeshSurfaceSampler(new THREE.Mesh(geometry[char])).build()
+      for (let i = 0; i < count / 2; i++) {
+        sampler.sample(point)
+        point.x += restX
+        point.multiplyScalar(IMPACT_SCALE)
+        const outward = new THREE.Vector3(point.x, point.y * 1.2, 0)
+        if (outward.lengthSq() < 0.01) outward.set(Math.random() - 0.5, Math.random() - 0.5, 0)
+        outward.normalize()
+        const force = 2.5 + Math.random() * 8
+        const size = 0.04 + Math.random() ** 2 * 0.18
+        list.push({
+          position: point.clone(),
+          velocity: new THREE.Vector3(
+            outward.x * force + (Math.random() - 0.5) * 3,
+            outward.y * force + (Math.random() - 0.5) * 3,
+            3 + Math.random() * 20, // toward the camera
+          ),
+          rotation: new THREE.Euler(Math.random() * 6, Math.random() * 6, Math.random() * 6),
+          spin: new THREE.Vector3((Math.random() - 0.5) * 14, (Math.random() - 0.5) * 14, (Math.random() - 0.5) * 14),
+          scale: new THREE.Vector3(size * (0.6 + Math.random()), size * (0.6 + Math.random()), size * 0.5),
+        })
+      }
+    }
+    return list
+  }, [geometry, count])
+
+  const gl = useThree(state => state.gl)
+  const scene = useThree(state => state.scene)
+
   useLayoutEffect(() => {
     const d = letterD.current
     const s = letterS.current
     const group = pair.current
-    if (!d || !s || !group) return
+    const mesh = shards.current
+    if (!d || !s || !group || !mesh) return
 
     d.position.set(-9, 2.2, -70)
     s.position.set(9, -2.2, -70)
     d.rotation.set(0.5, -1.3, 0.25)
     s.rotation.set(-0.5, 1.3, -0.25)
 
+    // Fragments exist from the first frame, collapsed to nothing, so their shader
+    // is compiled along with everything else instead of at the moment of impact.
+    const hidden = new THREE.Matrix4().makeScale(0, 0, 0)
+    seeds.forEach((_, index) => {
+      mesh.setMatrixAt(index, hidden)
+      mesh.setColorAt(index, shardPalette[index % shardPalette.length])
+    })
+    mesh.count = seeds.length
+    mesh.instanceMatrix.needsUpdate = true
+    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true
+    fragments.current = seeds
+
     const explode = () => {
-      // Seed every fragment on the surface of the letter it broke off from.
-      const list: Fragment[] = []
-      const point = new THREE.Vector3()
-      for (const mesh of [d, s]) {
-        mesh.updateMatrixWorld()
-        const sampler = new MeshSurfaceSampler(mesh).build()
-        for (let i = 0; i < count / 2; i++) {
-          sampler.sample(point)
-          point.applyMatrix4(mesh.matrixWorld)
-          const outward = new THREE.Vector3(point.x, point.y * 1.2, 0)
-          if (outward.lengthSq() < 0.01) outward.set(Math.random() - 0.5, Math.random() - 0.5, 0)
-          outward.normalize()
-          const force = 2.5 + Math.random() * 8
-          const size = 0.035 + Math.random() ** 2 * 0.17
-          list.push({
-            position: point.clone(),
-            velocity: new THREE.Vector3(
-              outward.x * force + (Math.random() - 0.5) * 3,
-              outward.y * force + (Math.random() - 0.5) * 3,
-              3 + Math.random() * 20, // toward the camera
-            ),
-            rotation: new THREE.Euler(Math.random() * 6, Math.random() * 6, Math.random() * 6),
-            spin: new THREE.Vector3((Math.random() - 0.5) * 14, (Math.random() - 0.5) * 14, (Math.random() - 0.5) * 14),
-            scale: new THREE.Vector3(size * (0.6 + Math.random()), size * (0.6 + Math.random()), size * 0.5),
-          })
-        }
-      }
-      fragments.current = list
-      list.forEach((_, index) => shards.current?.setColorAt(index, shardPalette[index % shardPalette.length]))
-      if (shards.current?.instanceColor) shards.current.instanceColor.needsUpdate = true
       d.visible = false
       s.visible = false
       drive.current.exploded = true
@@ -155,7 +176,7 @@ function Sequence({ colors, lowPower, onStart, onImpact, onFinished }: IntroScen
       callbacks.current.onImpact()
     }
 
-    const timeline = gsap.timeline({ onStart: () => callbacks.current.onStart() })
+    const timeline = gsap.timeline({ paused: true, onStart: () => callbacks.current.onStart() })
     timeline
       // 1. Approach: two letters fly in from deep space and meet in the middle.
       .to(d.position, { x: REST.D, y: 0, z: 0, duration: 2.5, ease: 'expo.out' }, 0.15)
@@ -167,16 +188,37 @@ function Sequence({ colors, lowPower, onStart, onImpact, onFinished }: IntroScen
       .to(group.scale, { x: 0.93, y: 0.93, z: 0.93, duration: 0.42, ease: 'power2.in' }, 2.62)
       .to(drive.current, { shake: 0.035, duration: 0.42, ease: 'power2.in' }, 2.62)
       // 3. Impact.
-      .to(group.scale, { x: 1.12, y: 1.12, z: 1.12, duration: 0.06, ease: 'power4.out' }, 3.04)
+      .to(group.scale, { x: IMPACT_SCALE, y: IMPACT_SCALE, z: IMPACT_SCALE, duration: 0.06, ease: 'power4.out' }, 3.04)
       .call(explode, undefined, 3.1)
       .set(drive.current, { shake: 0.55 }, 3.1)
       .to(drive.current, { shake: 0, duration: 0.9, ease: 'expo.out' }, 3.12)
-      .call(() => callbacks.current.onFinished(), undefined, 4.9)
+      .call(() => callbacks.current.onFinished(), undefined, 4.7)
+
+    // Hold the first frame until the GPU has compiled every shader and the page
+    // has settled, so the animation never starts in the middle of a stall.
+    let cancelled = false
+    let frame = 0
+    const waitForCalm = () => {
+      let calm = 0
+      let last = performance.now()
+      const began = last
+      const tick = (now: number) => {
+        if (cancelled) return
+        calm = now - last < 34 ? calm + 1 : 0
+        last = now
+        if (calm >= 6 || now - began > 1800) timeline.play()
+        else frame = requestAnimationFrame(tick)
+      }
+      frame = requestAnimationFrame(tick)
+    }
+    gl.compileAsync(scene, camera).then(waitForCalm, waitForCalm)
 
     return () => {
+      cancelled = true
+      cancelAnimationFrame(frame)
       timeline.kill()
     }
-  }, [count, shardPalette])
+  }, [seeds, shardPalette, gl, scene, camera])
 
   const dummy = useMemo(() => new THREE.Object3D(), [])
 
@@ -213,7 +255,6 @@ function Sequence({ colors, lowPower, onStart, onImpact, onFinished }: IntroScen
       dummy.updateMatrix()
       mesh.setMatrixAt(index, dummy.matrix)
     })
-    mesh.count = fragments.current.length
     mesh.instanceMatrix.needsUpdate = true
   })
 
@@ -226,9 +267,9 @@ function Sequence({ colors, lowPower, onStart, onImpact, onFinished }: IntroScen
         </group>
       </group>
       <group scale={fit}>
-        <instancedMesh ref={shards} args={[shardGeometry, materials.shard, count]} count={0} frustumCulled={false} />
+        <instancedMesh ref={shards} args={[shardGeometry, materials.shard, count]} frustumCulled={false} />
       </group>
-      <Sparkles count={lowPower ? 50 : 130} scale={[22, 12, 30]} position={[0, 0, -8]} size={1.6} speed={0.5} opacity={0.6} color={colors.accentInk} />
+      <Sparkles count={lowPower ? 40 : 70} scale={[22, 12, 30]} position={[0, 0, -8]} size={1.6} speed={0.5} opacity={0.6} color={colors.accentInk} />
     </>
   )
 }
@@ -237,7 +278,7 @@ export default function IntroScene(props: IntroSceneProps) {
   const { colors } = props
   return (
     <Canvas
-      dpr={props.lowPower ? [1, 1.5] : [1, 2]}
+      dpr={props.lowPower ? [1, 1.25] : [1, 1.5]}
       camera={{ position: [0, 0.25, 10.5], fov: 38, near: 0.1, far: 200 }}
       gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
       style={{ position: 'absolute', inset: 0 }}
@@ -248,7 +289,7 @@ export default function IntroScene(props: IntroSceneProps) {
       <directionalLight position={[-7, 2, 5]} intensity={1.6} color={colors.accentInk} />
       <directionalLight position={[7, -3, 4]} intensity={1.2} color={colors.panelStrong} />
       {/* A dark studio with soft boxes, tinted with the theme's accent and secondary colours. */}
-      <Environment resolution={256} frames={1}>
+      <Environment resolution={128} frames={1}>
         <color attach="background" args={['#020203']} />
         <Lightformer form="rect" intensity={9} position={[0, 6, 2]} rotation-x={Math.PI / 2} scale={[14, 3, 1]} />
         <Lightformer form="rect" intensity={6} color={colors.accent} position={[-8, 0, 3]} rotation-y={Math.PI / 2} scale={[9, 1.6, 1]} />

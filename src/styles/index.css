@@ -100,6 +100,8 @@
   html {
     background: var(--bg);
     overflow-x: clip;
+    /* Keeps the layout from shifting when page scroll is locked and released. */
+    scrollbar-gutter: stable;
     scroll-behavior: smooth;
     scroll-padding-top: 5.5rem;
     -webkit-text-size-adjust: 100%;
@@ -114,6 +116,8 @@
     font-size: 1rem;
     line-height: 1.6;
     overflow-x: clip;
+    /* Keeps the layout from shifting when page scroll is locked and released. */
+    scrollbar-gutter: stable;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
@@ -329,4 +333,14 @@
 [data-outline] footer * {
   outline: 1px dashed color-mix(in srgb, var(--accent-ink) 55%, transparent);
   outline-offset: -1px;
+}
+
+/* Intro: shown only while the 3D scene is still being prepared. */
+@keyframes intro-load {
+  from {
+    transform: translateX(-20%);
+  }
+  to {
+    transform: translateX(120%);
+  }
 }

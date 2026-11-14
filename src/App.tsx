@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Hero } from './components/hero/Hero'
 import { Intro, shouldPlayIntro } from './components/intro/Intro'
 import { Footer } from './components/layout/Footer'
@@ -16,6 +16,15 @@ export default function App() {
   // The site renders underneath the intro from the start, so the reveal is instant.
   const [intro, setIntro] = useState(shouldPlayIntro)
   const [revealed, setRevealed] = useState(!intro)
+  // Heavy effects start one at a time once the intro is out of the way:
+  // 1 = ambient strands and tagline, 2 = 3D sculpture, 3 = cursor glow.
+  const [stage, setStage] = useState(0)
+
+  useEffect(() => {
+    if (intro) return
+    const timers = [0, 450, 1300].map((delay, index) => window.setTimeout(() => setStage(index + 1), delay))
+    return () => timers.forEach(window.clearTimeout)
+  }, [intro])
 
   return (
     <>
@@ -26,10 +35,10 @@ export default function App() {
       >
         Skip to content
       </a>
-      {revealed && <CursorGlow />}
+      {stage >= 3 && <CursorGlow />}
       <Navbar visible={revealed} />
       <main id="main">
-        <Hero paused={!revealed} />
+        <Hero paused={!revealed} stage={stage} />
         <TechDivider />
         <About />
         <Projects />

@@ -1,12 +1,12 @@
 import { Environment, Float, Lightformer, Sparkles } from '@react-three/drei'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
 import type { ThemeColors } from '../../types'
 
 interface HeroSceneProps {
   colors: ThemeColors
-  /** False when the hero is off screen: the render loop stops entirely. */
+  /** False when the hero is off screen or covered: one frame is drawn, then the loop stops. */
   active: boolean
   /** Fewer particles and a lower pixel ratio for touch devices. */
   lowPower: boolean
@@ -71,7 +71,7 @@ function Sculpture({ colors, lowPower }: Pick<HeroSceneProps, 'colors' | 'lowPow
     [geometry, material],
   )
 
-  useFrame((state, delta) => {
+  useFrame((_state, delta) => {
     const group = rig.current
     if (!group) return
     const dt = Math.min(delta, 0.05)
@@ -96,7 +96,6 @@ function Sculpture({ colors, lowPower }: Pick<HeroSceneProps, 'colors' | 'lowPow
       light.current.position.x += (x * 5 + homeX - light.current.position.x) * ease
       light.current.position.y += (y * 3.5 - light.current.position.y) * ease
     }
-    state.invalidate()
   })
 
   return (
@@ -143,7 +142,32 @@ function Sculpture({ colors, lowPower }: Pick<HeroSceneProps, 'colors' | 'lowPow
   )
 }
 
+/** Compiles the scene's shaders off the main thread, then reports back. */
+function Precompile({ onReady }: { onReady: () => void }) {
+  const gl = useThree(state => state.gl)
+  const scene = useThree(state => state.scene)
+  const camera = useThree(state => state.camera)
+
+  useEffect(() => {
+    let cancelled = false
+    const done = () => {
+      if (!cancelled) onReady()
+    }
+    gl.compileAsync(scene, camera).then(done, done)
+    return () => {
+      cancelled = true
+    }
+  }, [gl, scene, camera, onReady])
+
+  return null
+}
+
 export default function HeroScene({ colors, active, lowPower }: HeroSceneProps) {
+  // Shaders compile in the background first. While inactive the scene still draws a
+  // single frame, so its one-off setup cost is paid before it is ever shown.
+  const [ready, setReady] = useState(false)
+  const markReady = useMemo(() => () => setReady(true), [])
+
   return (
     <Canvas
       className="!absolute inset-0"
@@ -151,9 +175,10 @@ export default function HeroScene({ colors, active, lowPower }: HeroSceneProps) 
       dpr={lowPower ? [1, 1.25] : [1, 1.75]}
       camera={{ position: [0, 0, 9], fov: 36 }}
       gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
-      frameloop={active ? 'always' : 'never'}
+      frameloop={active && ready ? 'always' : 'demand'}
       aria-hidden="true"
     >
+      <Precompile onReady={markReady} />
       <ambientLight intensity={0.35} />
       <directionalLight position={[5, 6, 4]} intensity={2.2} />
       <directionalLight position={[-6, -2, 2]} intensity={0.7} color={colors.panelStrong} />

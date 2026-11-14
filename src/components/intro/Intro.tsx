@@ -80,16 +80,25 @@ export function Intro({ onReveal, onDone }: IntroProps) {
   const onImpact = useCallback(() => {
     // Flashbang: white-out in ~80ms, swap the black for the live site underneath,
     // then let the white decay while the fragments are still flying.
-    gsap
-      .timeline()
-      .to(flash.current, { opacity: 1, duration: 0.08, ease: 'power4.in' })
-      .to(flare.current, { opacity: 1, scaleX: 1, duration: 0.1, ease: 'power4.out' }, 0)
-      .call(() => {
+    gsap.to(flare.current, { opacity: 1, scaleX: 1, duration: 0.1, ease: 'power4.out' })
+    gsap.to(flash.current, {
+      opacity: 1,
+      duration: 0.08,
+      ease: 'power4.in',
+      onComplete: () => {
+        // The screen is solid white here, so this is the one moment the page
+        // underneath can wake up without anyone seeing the cost of it.
         if (backdrop.current) backdrop.current.style.opacity = '0'
         reveal()
-      })
-      .to(flash.current, { opacity: 0, duration: 1.15, ease: 'power2.out' }, 0.2)
-      .to(flare.current, { opacity: 0, scaleX: 1.6, duration: 0.9, ease: 'power2.out' }, 0.2)
+        // Only start fading once the browser has actually painted that work.
+        requestAnimationFrame(() =>
+          requestAnimationFrame(() => {
+            gsap.to(flash.current, { opacity: 0, duration: 1.1, ease: 'power2.out' })
+            gsap.to(flare.current, { opacity: 0, scaleX: 1.6, duration: 0.9, ease: 'power2.out' })
+          }),
+        )
+      },
+    })
   }, [reveal])
 
   const skip = useCallback(() => {
@@ -125,6 +134,11 @@ export function Intro({ onReveal, onDone }: IntroProps) {
         />
       </div>
       {/* Vignette keeps the eye on the letters. */}
+      {!started && (
+        <div aria-hidden="true" className="absolute inset-x-0 top-1/2 mx-auto h-px w-24 overflow-hidden bg-line-strong">
+          <span className="block h-full w-1/2 bg-accent [animation:intro-load_0.9s_ease-in-out_infinite_alternate]" />
+        </div>
+      )}
       <div ref={stage} className="absolute inset-0">
         <Suspense fallback={null}>
           <IntroScene colors={colors} lowPower={lowPower} onStart={() => setStarted(true)} onImpact={onImpact} onFinished={finish} />
@@ -133,14 +147,14 @@ export function Intro({ onReveal, onDone }: IntroProps) {
       <div
         ref={flare}
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 opacity-0 mix-blend-screen"
+        className="pointer-events-none absolute inset-0 opacity-0 will-change-[opacity,transform]"
         style={{
           transform: 'scaleX(0.4)',
           background:
             'radial-gradient(ellipse 60% 6% at 50% 50%, #fff, transparent 70%), radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--accent) 55%, #fff), transparent 34%)',
         }}
       />
-      <div ref={flash} aria-hidden="true" className="pointer-events-none absolute inset-0 bg-white opacity-0" />
+      <div ref={flash} aria-hidden="true" className="pointer-events-none absolute inset-0 bg-white opacity-0 will-change-[opacity]" />
       {skippable && (
         <button
           type="button"

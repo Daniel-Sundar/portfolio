@@ -19,9 +19,11 @@ const EASE = [0.16, 1, 0.3, 1] as const
 interface HeroProps {
   /** True while the intro is covering the page: hold entrances and heavy effects. */
   paused?: boolean
+  /** How many of the heavy layers may run: 1 = strands and tagline, 2 = 3D sculpture. */
+  stage?: number
 }
 
-export function Hero({ paused = false }: HeroProps) {
+export function Hero({ paused = false, stage = 2 }: HeroProps) {
   const { colors, meta } = useTheme()
   const { rich3d, finePointer, webgl2 } = useCapabilities()
   const reduced = useReducedMotion()
@@ -44,8 +46,14 @@ export function Hero({ paused = false }: HeroProps) {
       className="relative flex min-h-[100svh] flex-col justify-end overflow-hidden pt-28 pb-10 md:pb-14"
     >
       {/* Layer 1: ambient strands */}
-      {webgl2 && !paused && (
-        <div aria-hidden="true" className="absolute inset-0 opacity-50">
+      {webgl2 && stage >= 1 && (
+        <motion.div
+          aria-hidden="true"
+          className="absolute inset-0"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 0.5 }}
+          transition={{ duration: 1.4, ease: 'easeOut' }}
+        >
           <Strands
             colors={[colors.accent, colors.panelStrong, colors.accentDeep]}
             count={3}
@@ -60,14 +68,23 @@ export function Hero({ paused = false }: HeroProps) {
             clickPulse={false}
             maxDevicePixelRatio={1.5}
           />
-        </div>
+        </motion.div>
       )}
 
       {/* Layer 2: 3D sculpture, or its static stand-in */}
       <div className="absolute inset-0">
         {rich3d ? (
-          <Suspense fallback={<HeroStatic />}>
-            <HeroScene colors={colors} active={inView && !paused} lowPower={!finePointer} />
+          // Mounted from the start so it is fully prepared while the intro covers it,
+          // then it only has to start moving and fade in.
+          <Suspense fallback={null}>
+            <motion.div
+              className="absolute inset-0"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: stage >= 2 ? 1 : 0 }}
+              transition={{ duration: 1.4, ease: 'easeOut' }}
+            >
+              <HeroScene colors={colors} active={inView && stage >= 2} lowPower={!finePointer} />
+            </motion.div>
           </Suspense>
         ) : (
           <HeroStatic />
@@ -114,7 +131,7 @@ export function Hero({ paused = false }: HeroProps) {
           <motion.div {...enter(0.6)} className="-ml-[1.1rem] md:-ml-[1.7rem] lg:col-span-6">
             {site.taglines.map((line, index) => (
               <div key={line} className="h-8 w-full max-w-[34rem] md:h-10">
-                {!paused && <TechText
+                {stage >= 1 && <TechText
                   text={line}
                   fontFamily="'JetBrains Mono Variable', monospace"
                   fontWeight={500}
