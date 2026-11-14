@@ -15,6 +15,7 @@ git init -q -b gh-pages
 git add -A
 git -c user.name="$(git -C .. config user.name)" -c user.email="$(git -C .. config user.email)" \
   commit -q -m "Deploy $(git -C .. rev-parse --short HEAD)"
-git push -f -q "$remote" gh-pages
+# Reuse the GitHub CLI login for this throwaway repository.
+git -c credential.helper= -c credential.helper='!gh auth git-credential' push -f -q "$remote" gh-pages
 rm -rf .git
 echo "Published to the gh-pages branch of $remote"
