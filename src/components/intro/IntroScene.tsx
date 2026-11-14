@@ -5,8 +5,11 @@ import { useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { MeshSurfaceSampler } from 'three/examples/jsm/math/MeshSurfaceSampler.js'
 import glyphData from '../../data/ds-glyphs.json'
+import type { ThemeColors } from '../../types'
 
 export interface IntroSceneProps {
+  /** Active theme colours: the intro uses the same palette as the site. */
+  colors: ThemeColors
   /** Fewer fragments and a lower pixel ratio on phones and tablets. */
   lowPower: boolean
   /** The letters have appeared and the timeline is running. */
@@ -56,7 +59,7 @@ interface Fragment {
 /** Where each letter rests when the two meet at the centre of the screen. */
 const REST = { D: -1.5, S: 1.5 }
 
-function Sequence({ lowPower, onStart, onImpact, onFinished }: IntroSceneProps) {
+function Sequence({ colors, lowPower, onStart, onImpact, onFinished }: IntroSceneProps) {
   const camera = useThree(state => state.camera)
   const viewport = useThree(state => state.viewport)
   const letterD = useRef<THREE.Mesh>(null)
@@ -67,9 +70,21 @@ function Sequence({ lowPower, onStart, onImpact, onFinished }: IntroSceneProps) 
   callbacks.current = { onStart, onImpact, onFinished }
 
   const geometry = useMemo(() => ({ D: buildLetter('D'), S: buildLetter('S') }), [])
-  const chrome = useMemo(
-    () => new THREE.MeshStandardMaterial({ color: '#e6e9ee', metalness: 1, roughness: 0.14, envMapIntensity: 1.5 }),
-    [],
+  // Same treatment as the hero headline: a light face on an accent-coloured body.
+  // ExtrudeGeometry puts the front and back in group 0 and the sides and bevel in group 1.
+  const materials = useMemo(
+    () => ({
+      face: new THREE.MeshStandardMaterial({ color: colors.ink, metalness: 0.55, roughness: 0.32 }),
+      body: new THREE.MeshStandardMaterial({ color: colors.accent, metalness: 1, roughness: 0.16, envMapIntensity: 1.4 }),
+      shard: new THREE.MeshStandardMaterial({ color: '#ffffff', metalness: 0.9, roughness: 0.22 }),
+    }),
+    [colors],
+  )
+  const letterMaterials = useMemo(() => [materials.face, materials.body], [materials])
+  // Fragments come off in the theme's three colours: mostly accent, some secondary, some light.
+  const shardPalette = useMemo(
+    () => [colors.accent, colors.accent, colors.accentDeep, colors.panelStrong, colors.ink].map(c => new THREE.Color(c)),
+    [colors],
   )
   const shardGeometry = useMemo(() => new THREE.TetrahedronGeometry(1, 0), [])
 
@@ -82,10 +97,10 @@ function Sequence({ lowPower, onStart, onImpact, onFinished }: IntroSceneProps) 
     () => () => {
       geometry.D.dispose()
       geometry.S.dispose()
-      chrome.dispose()
+      Object.values(materials).forEach(material => material.dispose())
       shardGeometry.dispose()
     },
-    [geometry, chrome, shardGeometry],
+    [geometry, materials, shardGeometry],
   )
 
   // Narrow screens: pull the pair back so both letters stay in frame.
@@ -131,6 +146,8 @@ function Sequence({ lowPower, onStart, onImpact, onFinished }: IntroSceneProps) 
         }
       }
       fragments.current = list
+      list.forEach((_, index) => shards.current?.setColorAt(index, shardPalette[index % shardPalette.length]))
+      if (shards.current?.instanceColor) shards.current.instanceColor.needsUpdate = true
       d.visible = false
       s.visible = false
       drive.current.exploded = true
@@ -159,7 +176,7 @@ function Sequence({ lowPower, onStart, onImpact, onFinished }: IntroSceneProps) 
     return () => {
       timeline.kill()
     }
-  }, [count])
+  }, [count, shardPalette])
 
   const dummy = useMemo(() => new THREE.Object3D(), [])
 
@@ -204,19 +221,20 @@ function Sequence({ lowPower, onStart, onImpact, onFinished }: IntroSceneProps) 
     <>
       <group ref={pair} scale={1}>
         <group scale={fit}>
-          <mesh ref={letterD} geometry={geometry.D} material={chrome} />
-          <mesh ref={letterS} geometry={geometry.S} material={chrome} />
+          <mesh ref={letterD} geometry={geometry.D} material={letterMaterials} />
+          <mesh ref={letterS} geometry={geometry.S} material={letterMaterials} />
         </group>
       </group>
       <group scale={fit}>
-        <instancedMesh ref={shards} args={[shardGeometry, chrome, count]} count={0} frustumCulled={false} />
+        <instancedMesh ref={shards} args={[shardGeometry, materials.shard, count]} count={0} frustumCulled={false} />
       </group>
-      <Sparkles count={lowPower ? 50 : 130} scale={[22, 12, 30]} position={[0, 0, -8]} size={1.6} speed={0.5} opacity={0.5} color="#ffffff" />
+      <Sparkles count={lowPower ? 50 : 130} scale={[22, 12, 30]} position={[0, 0, -8]} size={1.6} speed={0.5} opacity={0.6} color={colors.accentInk} />
     </>
   )
 }
 
 export default function IntroScene(props: IntroSceneProps) {
+  const { colors } = props
   return (
     <Canvas
       dpr={props.lowPower ? [1, 1.5] : [1, 2]}
@@ -227,15 +245,15 @@ export default function IntroScene(props: IntroSceneProps) {
     >
       <ambientLight intensity={0.15} />
       <spotLight position={[0, 9, 9]} angle={0.5} penumbra={1} intensity={220} />
-      <directionalLight position={[-7, 2, 5]} intensity={1.6} />
-      <directionalLight position={[7, -3, 4]} intensity={0.8} />
-      {/* A dark studio with long soft boxes: this is what makes chrome read as chrome. */}
+      <directionalLight position={[-7, 2, 5]} intensity={1.6} color={colors.accentInk} />
+      <directionalLight position={[7, -3, 4]} intensity={1.2} color={colors.panelStrong} />
+      {/* A dark studio with soft boxes, tinted with the theme's accent and secondary colours. */}
       <Environment resolution={256} frames={1}>
         <color attach="background" args={['#020203']} />
         <Lightformer form="rect" intensity={9} position={[0, 6, 2]} rotation-x={Math.PI / 2} scale={[14, 3, 1]} />
-        <Lightformer form="rect" intensity={5} position={[-8, 0, 3]} rotation-y={Math.PI / 2} scale={[9, 1.2, 1]} />
-        <Lightformer form="rect" intensity={5} position={[8, 0, 3]} rotation-y={-Math.PI / 2} scale={[9, 1.2, 1]} />
-        <Lightformer form="rect" intensity={2.5} position={[0, -6, 2]} rotation-x={-Math.PI / 2} scale={[14, 2, 1]} />
+        <Lightformer form="rect" intensity={6} color={colors.accent} position={[-8, 0, 3]} rotation-y={Math.PI / 2} scale={[9, 1.6, 1]} />
+        <Lightformer form="rect" intensity={5} color={colors.panelStrong} position={[8, 0, 3]} rotation-y={-Math.PI / 2} scale={[9, 1.6, 1]} />
+        <Lightformer form="rect" intensity={3} color={colors.accent} position={[0, -6, 2]} rotation-x={-Math.PI / 2} scale={[14, 2, 1]} />
         <Lightformer form="ring" intensity={3} position={[0, 0, 12]} scale={5} />
       </Environment>
       <Sequence {...props} />

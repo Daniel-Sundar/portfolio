@@ -1,6 +1,7 @@
 import gsap from 'gsap'
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { useTheme } from '../../context/ThemeContext'
 import { supportsWebGL2 } from '../../lib/webgl'
 
 const IntroScene = lazy(() => import('./IntroScene'))
@@ -26,6 +27,7 @@ interface IntroProps {
 }
 
 export function Intro({ onReveal, onDone }: IntroProps) {
+  const { colors } = useTheme()
   const backdrop = useRef<HTMLDivElement>(null)
   const stage = useRef<HTMLDivElement>(null)
   const flash = useRef<HTMLDivElement>(null)
@@ -111,11 +113,21 @@ export function Intro({ onReveal, onDone }: IntroProps) {
 
   return createPortal(
     <div className="fixed inset-0 z-[200]" role="region" aria-label="Intro animation">
-      <div ref={backdrop} className="absolute inset-0 bg-black" />
+      <div ref={backdrop} className="absolute inset-0 bg-bg">
+        {/* The same accent glow that sits behind the hero. */}
+        <div
+          aria-hidden="true"
+          className="absolute inset-0"
+          style={{
+            background:
+              'radial-gradient(ellipse 70% 45% at 50% 50%, color-mix(in srgb, var(--accent) 26%, transparent), transparent 70%), radial-gradient(ellipse 50% 30% at 70% 65%, color-mix(in srgb, var(--panel-strong) 45%, transparent), transparent 70%)',
+          }}
+        />
+      </div>
       {/* Vignette keeps the eye on the letters. */}
       <div ref={stage} className="absolute inset-0">
         <Suspense fallback={null}>
-          <IntroScene lowPower={lowPower} onStart={() => setStarted(true)} onImpact={onImpact} onFinished={finish} />
+          <IntroScene colors={colors} lowPower={lowPower} onStart={() => setStarted(true)} onImpact={onImpact} onFinished={finish} />
         </Suspense>
       </div>
       <div
@@ -125,7 +137,7 @@ export function Intro({ onReveal, onDone }: IntroProps) {
         style={{
           transform: 'scaleX(0.4)',
           background:
-            'radial-gradient(ellipse 60% 6% at 50% 50%, rgba(255,255,255,1), rgba(255,255,255,0) 70%), radial-gradient(circle at 50% 50%, rgba(255,255,255,0.9), rgba(255,255,255,0) 32%)',
+            'radial-gradient(ellipse 60% 6% at 50% 50%, #fff, transparent 70%), radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--accent) 55%, #fff), transparent 34%)',
         }}
       />
       <div ref={flash} aria-hidden="true" className="pointer-events-none absolute inset-0 bg-white opacity-0" />
@@ -133,7 +145,7 @@ export function Intro({ onReveal, onDone }: IntroProps) {
         <button
           type="button"
           onClick={skip}
-          className="label absolute right-5 bottom-5 rounded-full border border-white/30 px-4 py-2.5 text-white/80 transition-colors hover:border-white hover:text-white focus-visible:outline-white md:right-8 md:bottom-8"
+          className="label absolute right-5 bottom-5 rounded-full border border-line-strong px-4 py-2.5 text-ink-soft transition-colors hover:border-accent hover:bg-accent hover:text-on-accent md:right-8 md:bottom-8"
         >
           Skip intro
         </button>
