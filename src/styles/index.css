@@ -1,0 +1,332 @@
+@import 'tailwindcss';
+
+/* ------------------------------------------------------------------
+   Design tokens. Every colour in the UI resolves to one of these
+   variables, so a theme is nothing more than a new set of values.
+   60 / 30 / 10: --bg carries the page, --panel the secondary surfaces,
+   --accent the calls to action and highlights.
+------------------------------------------------------------------- */
+:root,
+[data-theme='obsidian'] {
+  color-scheme: dark;
+  --bg: #121314;
+  --raise: #191b1c;
+  --panel: #14281d;
+  --panel-strong: #1b3b2b;
+  --on-panel: #f4f4f5;
+  --on-panel-soft: #a9b8af;
+  --ink: #f4f4f5;
+  --ink-soft: #a1a8a4;
+  --accent: #dc143c;
+  --accent-deep: #b11d1d;
+  --accent-ink: #f4526f;
+  --on-accent: #ffffff;
+  --gold: #d4af37;
+  --line: rgb(244 244 245 / 0.12);
+  --line-strong: rgb(244 244 245 / 0.24);
+  --glass: rgb(18 19 20 / 0.62);
+  --shadow: 0 30px 80px -30px rgb(0 0 0 / 0.75);
+}
+
+[data-theme='mocha'] {
+  color-scheme: dark;
+  --bg: #231916;
+  --raise: #2c201c;
+  --panel: #e6d2b5;
+  --panel-strong: #d8c09d;
+  --on-panel: #231916;
+  --on-panel-soft: #5c4a3f;
+  --ink: #e6d2b5;
+  --ink-soft: #b7a48b;
+  --accent: #c85a17;
+  --accent-deep: #a34610;
+  --accent-ink: #e57a35;
+  --on-accent: #160d0a;
+  --gold: #d9b25f;
+  --line: rgb(230 210 181 / 0.14);
+  --line-strong: rgb(230 210 181 / 0.3);
+  --glass: rgb(35 25 22 / 0.66);
+  --shadow: 0 30px 80px -30px rgb(0 0 0 / 0.7);
+}
+
+[data-theme='editorial'] {
+  color-scheme: light;
+  --bg: #feeded;
+  --raise: #fbdfdf;
+  --panel: #b17375;
+  --panel-strong: #9f6164;
+  --on-panel: #1f0b0d;
+  --on-panel-soft: #3d1b1e;
+  --ink: #2a1114;
+  --ink-soft: #7a4e51;
+  --accent: #b11d1d;
+  --accent-deep: #8e1515;
+  --accent-ink: #b11d1d;
+  --on-accent: #feeded;
+  --gold: #8f6a0c;
+  --line: rgb(42 17 20 / 0.16);
+  --line-strong: rgb(42 17 20 / 0.34);
+  --glass: rgb(254 237 237 / 0.7);
+  --shadow: 0 30px 70px -34px rgb(90 30 34 / 0.45);
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-raise: var(--raise);
+  --color-panel: var(--panel);
+  --color-panel-strong: var(--panel-strong);
+  --color-on-panel: var(--on-panel);
+  --color-on-panel-soft: var(--on-panel-soft);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-accent: var(--accent);
+  --color-accent-deep: var(--accent-deep);
+  --color-accent-ink: var(--accent-ink);
+  --color-on-accent: var(--on-accent);
+  --color-gold: var(--gold);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-glass: var(--glass);
+
+  --font-sans: 'Archivo Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-serif: 'Instrument Serif', ui-serif, Georgia, serif;
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, 'SFMono-Regular', monospace;
+
+  --radius-card: 1.25rem;
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@layer base {
+  html {
+    background: var(--bg);
+    overflow-x: clip;
+    scroll-behavior: smooth;
+    scroll-padding-top: 5.5rem;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.6;
+    overflow-x: clip;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background: var(--accent);
+    color: var(--on-accent);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent-ink);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  button {
+    cursor: pointer;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  p {
+    margin: 0;
+  }
+}
+
+@layer components {
+  /* Display type: Archivo pushed to its widest, heaviest cut. */
+  .display {
+    font-family: var(--font-sans);
+    font-stretch: 125%;
+    font-weight: 800;
+    line-height: 0.92;
+    letter-spacing: -0.035em;
+    text-transform: uppercase;
+    text-wrap: balance;
+  }
+
+  /* Small technical label, used where the content really is metadata. */
+  .label {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    line-height: 1.4;
+    text-transform: uppercase;
+  }
+
+  .serif {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    letter-spacing: -0.01em;
+  }
+
+  .shell {
+    width: 100%;
+    max-width: 1680px;
+    margin-inline: auto;
+    padding-inline: clamp(1rem, 4vw, 4rem);
+  }
+
+  .section {
+    position: relative;
+    padding-block: clamp(4.5rem, 10vw, 9rem);
+  }
+
+  .card {
+    position: relative;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-card);
+    background: var(--raise);
+  }
+
+  .card-panel {
+    position: relative;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-card);
+    background: var(--panel);
+    color: var(--on-panel);
+  }
+
+  /* Cursor-following light. --mx / --my are set by useSpotlight. */
+  .spotlight::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.35s ease;
+    background: radial-gradient(
+      420px circle at var(--mx, 50%) var(--my, 50%),
+      color-mix(in srgb, var(--accent) 22%, transparent),
+      transparent 60%
+    );
+  }
+
+  .spotlight:hover::before {
+    opacity: 1;
+  }
+
+  .grid-paper {
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+}
+
+/* Preview micro-animations. All are transform / opacity only. */
+@keyframes scan-sweep {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(var(--sweep, 5.5rem));
+  }
+}
+
+@keyframes soft-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(var(--r, 0deg));
+  }
+  50% {
+    transform: translate3d(0, -10px, 0) rotate(calc(var(--r, 0deg) + 4deg));
+  }
+}
+
+@keyframes spin-slow {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes dash-flow {
+  to {
+    stroke-dashoffset: -40;
+  }
+}
+
+@keyframes scroll-hint {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(260%);
+  }
+}
+
+/* Theme change: a circular reveal from the switcher, where supported. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-new(root) {
+  animation: theme-reveal 0.6s var(--ease-out-expo);
+}
+
+@keyframes theme-reveal {
+  from {
+    clip-path: circle(0% at var(--vt-x, 50%) var(--vt-y, 0%));
+  }
+  to {
+    clip-path: circle(150% at var(--vt-x, 50%) var(--vt-y, 0%));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+
+  ::view-transition-new(root) {
+    animation: none;
+  }
+}
+
+@keyframes spin-cube {
+  from {
+    transform: rotateX(-24deg) rotateY(0deg);
+  }
+  to {
+    transform: rotateX(-24deg) rotateY(360deg);
+  }
+}
+
+/* UI Inspector: layout outlines. */
+[data-outline] #main *,
+[data-outline] footer * {
+  outline: 1px dashed color-mix(in srgb, var(--accent-ink) 55%, transparent);
+  outline-offset: -1px;
+}

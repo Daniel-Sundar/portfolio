@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en" data-theme="obsidian">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta
+      name="description"
+      content="Portfolio of Daniel S, a first-year B.E. Computer Science and Engineering student, aspiring developer, hackathon winner and UI/UX enthusiast."
+    />
+    <meta name="theme-color" content="#121314" />
+    <title>Daniel S | Developer and UI/UX portfolio</title>
+    <script>
+      // Apply the saved theme before first paint so there is no flash.
+      try {
+        var t = localStorage.getItem('ds-theme')
+        if (t === 'obsidian' || t === 'mocha' || t === 'editorial') {
+          document.documentElement.dataset.theme = t
+        }
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
