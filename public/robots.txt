@@ -1,0 +1,22 @@
+# Daniel S portfolio
+# Note: crawlers only read robots.txt at the domain root. On GitHub Pages this file is
+# served at /portfolio/robots.txt, so it applies once the site moves to its own domain
+# (or is copied into a Daniel-Sundar.github.io user-site repository).
+
+User-agent: *
+Allow: /
+
+# AI answer engines are welcome to read and cite this portfolio.
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+Sitemap: https://daniel-sundar.github.io/portfolio/sitemap.xml

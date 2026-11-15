@@ -1,3 +1,4 @@
+import { MotionConfig } from 'motion/react'
 import { useEffect, useState } from 'react'
 import { Hero } from './components/hero/Hero'
 import { Intro, shouldPlayIntro } from './components/intro/Intro'
@@ -27,17 +28,19 @@ export default function App() {
   }, [intro])
 
   return (
-    <>
+    // reducedMotion="user": every Motion animation drops transforms and layout
+    // movement when the visitor asks the OS for reduced motion.
+    <MotionConfig reducedMotion="user">
       {intro && <Intro onReveal={() => setRevealed(true)} onDone={() => setIntro(false)} />}
       <a
-        href="#main"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:rounded-full focus:bg-accent focus:px-4 focus:py-2 focus:text-on-accent"
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:inline-flex focus:min-h-[44px] focus:items-center focus:rounded-full focus:bg-accent focus:px-5 focus:text-on-accent"
       >
         Skip to content
       </a>
       {stage >= 3 && <CursorGlow />}
       <Navbar visible={revealed} />
-      <main id="main">
+      <main id="main-content" tabIndex={-1} className="outline-none">
         <Hero paused={!revealed} stage={stage} />
         <TechDivider />
         <About />
@@ -48,6 +51,6 @@ export default function App() {
       </main>
       <Footer />
       <Inspector />
-    </>
+    </MotionConfig>
   )
 }

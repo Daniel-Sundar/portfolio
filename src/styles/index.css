@@ -41,7 +41,8 @@
   --accent: #c85a17;
   --accent-deep: #a34610;
   --accent-ink: #e57a35;
-  --on-accent: #160d0a;
+  /* Darkened from #160d0a: 4.66:1 on --accent (was 4.50). */
+  --on-accent: #0f0806;
   --gold: #d9b25f;
   --line: rgb(230 210 181 / 0.14);
   --line-strong: rgb(230 210 181 / 0.3);
@@ -56,14 +57,16 @@
   --panel: #b17375;
   --panel-strong: #9f6164;
   --on-panel: #1f0b0d;
-  --on-panel-soft: #3d1b1e;
+  /* Darkened from #3d1b1e: 4.70:1 on --panel (was 4.06). */
+  --on-panel-soft: #2b1013;
   --ink: #2a1114;
   --ink-soft: #7a4e51;
   --accent: #b11d1d;
   --accent-deep: #8e1515;
   --accent-ink: #b11d1d;
   --on-accent: #feeded;
-  --gold: #8f6a0c;
+  /* Darkened from #8f6a0c: 4.86:1 on --raise (was 3.95). */
+  --gold: #7d5d0a;
   --line: rgb(42 17 20 / 0.16);
   --line-strong: rgb(42 17 20 / 0.34);
   --glass: rgb(254 237 237 / 0.7);
@@ -127,10 +130,16 @@
     color: var(--on-accent);
   }
 
+  /* Keyboard focus ring: 3px, >= 3:1 against every theme background. */
   :focus-visible {
-    outline: 2px solid var(--accent-ink);
+    outline: 3px solid var(--accent-ink);
     outline-offset: 3px;
     border-radius: 4px;
+  }
+
+  /* On the secondary panels the accent can sit too close to the surface. */
+  .card-panel :focus-visible {
+    outline-color: var(--on-panel);
   }
 
   button {
@@ -329,7 +338,7 @@
 }
 
 /* UI Inspector: layout outlines. */
-[data-outline] #main *,
+[data-outline] #main-content *,
 [data-outline] footer * {
   outline: 1px dashed color-mix(in srgb, var(--accent-ink) 55%, transparent);
   outline-offset: -1px;

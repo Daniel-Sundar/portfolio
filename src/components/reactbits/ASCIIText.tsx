@@ -23,6 +23,8 @@ export type ASCIITextProps = {
   idle?: boolean;
   interactive?: boolean;
   theme?: 'dark' | 'light';
+  /** Clean accessible name for the canvas (defaults to `text`). */
+  ariaLabel?: string;
   className?: string;
   style?: React.CSSProperties;
 };
@@ -241,6 +243,7 @@ export default function ASCIIText({
   idle = true,
   interactive = true,
   theme = 'dark',
+  ariaLabel,
   className = '',
   style
 }: ASCIITextProps) {
@@ -587,7 +590,7 @@ export default function ASCIIText({
       ref={containerRef}
       className={`absolute inset-0 touch-pan-y${className ? ` ${className}` : ''}`}
       style={style}
-      aria-label={text}
+      aria-label={ariaLabel ?? text}
       role="img"
     >
       <canvas ref={canvasRef} className="absolute inset-0 block h-full w-full" />

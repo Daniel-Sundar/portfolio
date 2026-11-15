@@ -53,6 +53,7 @@ export function About() {
             {webgl2 ? (
               <ASCIIText
                 text="DANIEL"
+                ariaLabel="Daniel, drawn in ASCII characters"
                 fontFamily="'Archivo Variable', sans-serif"
                 fontWeight={800}
                 asciiFontSize={7}

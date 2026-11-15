@@ -2,9 +2,13 @@ import type { Achievement, NavItem, SkillPillar, SocialLink, ThemeMeta } from '.
 
 export const site = {
   name: 'Daniel S',
+  /** Role line completing the page's single <h1>. */
+  role: 'UI/UX Designer & Software Developer',
   monogram: 'DS.',
   eyebrow: ['18 Y/O', 'B.E. CSE', 'Design Thinker'],
   taglines: ['ASPIRING DEVELOPER //', 'UI/UX ENTHUSIAST //', 'CREATIVE PROBLEM SOLVER'],
+  /** What screen readers and crawlers get instead of the canvas-drawn taglines. */
+  taglinesText: 'Aspiring developer, UI/UX enthusiast and creative problem solver.',
   intro:
     'Hi, I’m Daniel S, a first-year B.E. Computer Science and Engineering student with a passion for technology and software development. I have knowledge of HTML, CSS, Python, and React, and I’m continuously exploring new technologies to improve my skills. I enjoy problem-solving, creative thinking, leadership, and public speaking. I’m passionate about learning, building innovative projects, and showcasing my journey as an aspiring developer.',
   contactHeading: 'Have an idea? Let’s build something great.',

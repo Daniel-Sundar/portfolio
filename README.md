@@ -55,3 +55,17 @@ LogoLoop, Magnet.
 - 3D canvases stop rendering when they are off screen.
 - With `prefers-reduced-motion`, the 3D scene, cursor glow and entrance animations are off.
 - Modals trap focus, close on Escape, and return focus to the button that opened them.
+
+## SEO, accessibility and security notes
+
+- `index.html` holds the title, description, canonical URL, Open Graph / Twitter tags and a
+  JSON-LD `@graph` (WebSite, ProfilePage, Person, and an ItemList of the seven projects).
+  Update it when projects change. `public/og-image.png` is the 1200×630 share image.
+- `public/sitemap.xml` and `public/robots.txt` ship with the build. Crawlers only read
+  `robots.txt` at a domain root, so on GitHub Pages submit the sitemap in Google Search Console.
+- The page has exactly one `<h1>` (Hero). DepthText draws its depth layers with CSS `content`,
+  so the name exists once in the DOM. Canvas text (TechText, ASCIIText) takes an `ariaLabel`.
+- Interactive controls are at least 44×44px; the focus ring is a 3px `:focus-visible` outline.
+  All theme text pairs meet WCAG AA 4.5:1.
+- The production build adds a Content-Security-Policy `<meta>` (see `vite.config.ts`); inline
+  scripts are allowed by SHA-256 hash, computed at build time.

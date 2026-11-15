@@ -56,7 +56,7 @@ export function Contact() {
                       {link.icon === 'github' ? <GitHubIcon width={26} height={26} /> : <LinkedInIcon width={26} height={26} />}
                       <span>
                         <span className="display block text-xl">{link.label}</span>
-                        <span className="font-mono text-xs opacity-70">{link.handle}</span>
+                        <span className="font-mono text-xs">{link.handle}</span>
                       </span>
                     </span>
                     <ArrowUpRight className="transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1" />

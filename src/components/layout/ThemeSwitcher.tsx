@@ -16,7 +16,7 @@ export function ThemeSwitcher({ layoutId, className }: ThemeSwitcherProps) {
     <div
       role="group"
       aria-label="Colour theme"
-      className={cn('flex items-center gap-0.5 rounded-full border border-line p-1', className)}
+      className={cn('flex items-center rounded-full border border-line', className)}
     >
       {themes.map(item => {
         const active = item.id === theme
@@ -35,12 +35,12 @@ export function ThemeSwitcher({ layoutId, className }: ThemeSwitcherProps) {
                 y: rect.top + rect.height / 2,
               })
             }}
-            className="relative grid size-8 place-items-center rounded-full"
+            className="relative grid size-11 place-items-center rounded-full"
           >
             {active && (
               <motion.span
                 layoutId={layoutId}
-                className="absolute inset-0 rounded-full border border-accent-ink bg-ink/10"
+                className="absolute inset-1.5 rounded-full border border-accent-ink bg-ink/10"
                 transition={{ type: 'spring', stiffness: 420, damping: 32 }}
               />
             )}

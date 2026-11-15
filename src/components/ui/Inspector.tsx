@@ -179,13 +179,15 @@ function StructureTab({ outline, onToggle }: { outline: boolean; onToggle: () =>
           aria-checked={outline}
           aria-label="Show layout outlines"
           onClick={onToggle}
-          className={cn('relative h-7 w-12 shrink-0 rounded-full border transition-colors', outline ? 'border-accent bg-accent' : 'border-line-strong')}
+          className="grid min-h-[44px] min-w-[56px] shrink-0 place-items-center rounded-full"
         >
-          <motion.span
-            className={cn('absolute top-0.5 left-0.5 size-5 rounded-full', outline ? 'bg-on-accent' : 'bg-ink-soft')}
-            animate={{ x: outline ? 20 : 0 }}
-            transition={{ type: 'spring', stiffness: 500, damping: 32 }}
-          />
+          <span aria-hidden="true" className={cn('relative block h-7 w-12 rounded-full border transition-colors', outline ? 'border-accent bg-accent' : 'border-line-strong')}>
+            <motion.span
+              className={cn('absolute top-0.5 left-0.5 size-5 rounded-full', outline ? 'bg-on-accent' : 'bg-ink-soft')}
+              animate={{ x: outline ? 20 : 0 }}
+              transition={{ type: 'spring', stiffness: 500, damping: 32 }}
+            />
+          </span>
         </button>
       </div>
       <ul className="rounded-xl border border-line p-3">
@@ -291,7 +293,7 @@ export function Inspector() {
                   type="button"
                   onClick={() => setOpen(false)}
                   aria-label="Close inspector"
-                  className="grid size-10 place-items-center rounded-full border border-line-strong transition-colors hover:border-accent hover:bg-accent hover:text-on-accent"
+                  className="grid size-11 place-items-center rounded-full border border-line-strong transition-colors hover:border-accent hover:bg-accent hover:text-on-accent"
                 >
                   <CloseIcon />
                 </button>
@@ -309,7 +311,7 @@ export function Inspector() {
                   aria-controls="inspector-panel"
                   onClick={() => setTab(item)}
                   className={cn(
-                    'relative shrink-0 rounded-full px-2.5 py-2 font-mono text-[0.7rem] transition-colors',
+                    'relative flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-full px-2.5 font-mono text-[0.7rem] transition-colors',
                     tab === item ? 'text-on-accent' : 'text-ink-soft hover:text-ink',
                   )}
                 >

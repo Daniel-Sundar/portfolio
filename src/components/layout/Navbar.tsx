@@ -44,16 +44,16 @@ export function Navbar({ visible = true }: { visible?: boolean }) {
         className="pointer-events-auto mx-auto max-w-[1180px]"
       >
         <nav
-          aria-label="Primary"
+          aria-label="Main navigation"
           className={cn(
-            'flex items-center justify-between gap-3 rounded-full border bg-glass py-2 pr-2 pl-5 backdrop-blur-xl transition-[border-color,box-shadow] duration-500',
+            'flex items-center justify-between gap-3 rounded-full border bg-glass py-1.5 pr-1.5 pl-4 backdrop-blur-xl transition-[border-color,box-shadow] duration-500',
             scrolled ? 'border-line-strong shadow-[var(--shadow)]' : 'border-line',
           )}
         >
           <a
             href="#top"
             aria-label="Daniel S, back to top"
-            className="display text-xl tracking-tight"
+            className="display inline-flex min-h-[44px] min-w-[44px] items-center text-xl tracking-tight"
           >
             DS<span className="text-accent">.</span>
           </a>
@@ -67,7 +67,7 @@ export function Navbar({ visible = true }: { visible?: boolean }) {
                     href={`#${item.id}`}
                     aria-current={current ? 'location' : undefined}
                     className={cn(
-                      'relative block rounded-full px-4 py-2 text-sm font-medium transition-colors duration-300',
+                      'relative flex min-h-[44px] items-center rounded-full px-4 text-sm font-medium transition-colors duration-300',
                       current ? 'text-ink' : 'text-ink-soft hover:text-ink',
                     )}
                   >
@@ -88,13 +88,13 @@ export function Navbar({ visible = true }: { visible?: boolean }) {
           <div className="flex items-center gap-2">
             <ThemeSwitcher layoutId="theme-ring-nav" />
             <div className="hidden sm:block">
-              <ActionLink href="#contact" variant="primary" className="h-10" magnetPadding={16}>
+              <ActionLink href="#contact" variant="primary" className="h-11" magnetPadding={16}>
                 Let’s Talk
               </ActionLink>
             </div>
             <button
               type="button"
-              className="grid size-10 place-items-center rounded-full border border-line lg:hidden"
+              className="grid size-11 place-items-center rounded-full border border-line lg:hidden"
               aria-expanded={open}
               aria-controls="mobile-menu"
               aria-label={open ? 'Close menu' : 'Open menu'}
@@ -128,7 +128,7 @@ export function Navbar({ visible = true }: { visible?: boolean }) {
                       onClick={() => setOpen(false)}
                       aria-current={active === item.id ? 'location' : undefined}
                       className={cn(
-                        'display flex items-center justify-between rounded-2xl px-4 py-3.5 text-2xl',
+                        'display flex min-h-[44px] items-center justify-between rounded-2xl px-4 py-3.5 text-2xl',
                         active === item.id ? 'bg-ink/10 text-ink' : 'text-ink-soft',
                       )}
                     >

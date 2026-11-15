@@ -114,7 +114,7 @@ export function Achievements() {
                     <span className="absolute -top-1 right-0 size-2 rotate-45 border-t border-r border-on-panel/70" />
                   </li>
                   <li className="rounded-xl border border-on-panel bg-on-panel px-3 py-2.5 text-panel">
-                    <span className="label block opacity-70">Qualified</span>
+                    <span className="label block">Qualified</span>
                     <span className="font-semibold [font-stretch:108%]">External stage</span>
                   </li>
                 </ol>

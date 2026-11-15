@@ -394,7 +394,8 @@ const DepthText = ({
         {depthLayers.map(layer => (
           <span
             aria-hidden="true"
-            className="pointer-events-none absolute inset-0 z-0 inline-block"
+            className="pointer-events-none absolute inset-0 z-0 inline-block before:content-[attr(data-depth-text)]"
+            data-depth-text={text}
             key={layer.index}
             style={{
               ...textStyle,
@@ -406,9 +407,7 @@ const DepthText = ({
                   ? `0 0.18em 0.32em color-mix(in srgb, ${depthColor} 24%, rgba(0, 0, 0, 0.42))`
                   : undefined
             }}
-          >
-            {text}
-          </span>
+          />
         ))}
         <span
           className="relative z-10 inline-block"

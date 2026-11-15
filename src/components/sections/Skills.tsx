@@ -84,7 +84,7 @@ export function Skills() {
                     </span>
                     <span className="relative">
                       <span className="display block text-[clamp(1.15rem,1.8vw,1.75rem)] [overflow-wrap:anywhere]">{pillar.title}</span>
-                      <span className={cn('mt-2 hidden text-sm sm:block', selected ? 'opacity-90' : 'text-ink-soft')}>
+                      <span className={cn('mt-2 hidden text-sm sm:block', selected ? '' : 'text-ink-soft')}>
                         {pillar.summary}
                       </span>
                     </span>
@@ -108,6 +108,7 @@ export function Skills() {
                   <ASCIIText
                     key={active.id}
                     text={asciiWord[active.id]}
+                    ariaLabel={`${active.title}, drawn in ASCII characters`}
                     fontFamily="'Archivo Variable', sans-serif"
                     fontWeight={800}
                     asciiFontSize={6}

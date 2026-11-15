@@ -70,7 +70,7 @@ export function Projects() {
                 )}
                 <span className="relative">
                   {item}
-                  <span className="ml-2 font-mono text-xs opacity-70">{count}</span>
+                  <span className="ml-2 font-mono text-xs">{count}</span>
                 </span>
               </button>
             )

@@ -159,7 +159,7 @@ export function Intro({ onReveal, onDone }: IntroProps) {
         <button
           type="button"
           onClick={skip}
-          className="label absolute right-5 bottom-5 rounded-full border border-line-strong px-4 py-2.5 text-ink-soft transition-colors hover:border-accent hover:bg-accent hover:text-on-accent md:right-8 md:bottom-8"
+          className="label absolute right-5 bottom-5 inline-flex min-h-[44px] min-w-[44px] items-center rounded-full border border-line-strong px-5 text-ink-soft transition-colors hover:border-accent hover:bg-accent hover:text-on-accent md:right-8 md:bottom-8"
         >
           Skip intro
         </button>

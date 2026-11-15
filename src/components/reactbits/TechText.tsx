@@ -59,11 +59,13 @@ export interface TechTextProps {
   intro?: 'none' | 'type' | 'assemble' | 'metrics';
   introDuration?: number;
   guides?: boolean;
+  /** Clean accessible name for the canvas (defaults to `text`). */
+  ariaLabel?: string;
   className?: string;
   style?: CSSProperties;
 }
 
-type Settings = Required<Omit<TechTextProps, 'className' | 'style'>>;
+type Settings = Required<Omit<TechTextProps, 'className' | 'style' | 'ariaLabel'>>;
 
 const LABEL_FONT = '10px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace';
 const FALLOFF_STEPS = 8;
@@ -122,6 +124,7 @@ const TechText = ({
   intro = 'none',
   introDuration = 2,
   guides = false,
+  ariaLabel,
   className = '',
   style
 }: TechTextProps) => {
@@ -1074,7 +1077,7 @@ const TechText = ({
       className={`relative w-full h-full touch-pan-y select-none ${className}`.trim()}
       style={style}
       role="img"
-      aria-label={text}
+      aria-label={ariaLabel ?? text}
     >
       <canvas ref={canvasRef} className="block w-full h-full" />
     </div>

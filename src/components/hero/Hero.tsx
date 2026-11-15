@@ -108,11 +108,13 @@ export function Hero({ paused = false, stage = 2 }: HeroProps) {
           ))}
         </motion.p>
 
+        {/* The page's only <h1>. DepthText keeps one real copy of the name in the DOM
+            (its depth layers are drawn with CSS content), so the heading reads
+            "Daniel S — UI/UX Designer & Software Developer" to screen readers and crawlers. */}
         <motion.h1 {...enter(0.45)} className="display -ml-[0.04em]">
-          <span className="sr-only">{site.name}</span>
-          <span aria-hidden="true" className="block">
+          <span className="block">
             <DepthText
-              text="DANIEL S"
+              text={site.name}
               fontSize="clamp(3.1rem, 14.6vw, 17rem)"
               fontWeight={800}
               faceColor={colors.ink}
@@ -125,14 +127,17 @@ export function Hero({ paused = false, stage = 2 }: HeroProps) {
               shadow={meta.mode === 'dark'}
             />
           </span>
+          <span className="sr-only"> — {site.role}</span>
         </motion.h1>
 
         <div className="mt-8 grid grid-cols-1 gap-8 md:mt-12 md:gap-10 lg:grid-cols-12 lg:items-end [&>*]:min-w-0">
-          <motion.div {...enter(0.6)} className="-ml-[1.1rem] md:-ml-[1.7rem] lg:col-span-6">
+          <p className="sr-only">{site.taglinesText}</p>
+          <motion.div {...enter(0.6)} aria-hidden="true" className="-ml-[1.1rem] md:-ml-[1.7rem] lg:col-span-6">
             {site.taglines.map((line, index) => (
               <div key={line} className="h-8 w-full max-w-[34rem] md:h-10">
                 {stage >= 1 && <TechText
                   text={line}
+                  ariaLabel={line.replace(/\s*\/\/\s*$/, '').toLowerCase()}
                   fontFamily="'JetBrains Mono Variable', monospace"
                   fontWeight={500}
                   fontSize={26}
@@ -177,7 +182,7 @@ export function Hero({ paused = false, stage = 2 }: HeroProps) {
         <motion.a
           {...(reduced ? {} : { initial: { opacity: 0 }, animate: { opacity: paused ? 0 : 1 }, transition: { delay: 1.4, duration: 1 } })}
           href="#stack"
-          className="label mt-12 hidden items-center gap-4 text-ink-soft transition-colors hover:text-ink md:inline-flex"
+          className="label mt-12 hidden min-h-[44px] items-center gap-4 text-ink-soft transition-colors hover:text-ink md:inline-flex"
         >
           <span className="relative block h-10 w-px overflow-hidden bg-line-strong" aria-hidden="true">
             <span className="absolute inset-x-0 top-0 h-4 bg-accent [animation:scroll-hint_1.8s_ease-in-out_infinite]" />
